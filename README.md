@@ -1,91 +1,72 @@
 # Improving What's Cooking: Using GNNs to Redefine Culinary Boundaries
 
-An advanced implementation of Graph Neural Networks (GNNs) for culinary ingredient compatibility prediction using the FlavorGraph dataset. This project explores multiple GNN architectures to understand and predict ingredient pairings, offering insights into culinary science through deep learning on graphs.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Dataset](#dataset)
-- [Implemented Models](#implemented-models)
-- [Key Features](#key-features)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Results](#results)
-- [Future Improvements](#future-improvements)
-- [License](#license)
+Advanced Graph Neural Network implementation for culinary ingredient compatibility prediction using the FlavorGraph dataset. This project explores multiple GNN architectures with enriched features and comprehensive evaluation metrics to understand and predict ingredient pairings.
 
 ## Overview
 
-This project leverages Graph Neural Networks to analyze and predict ingredient compatibility using the FlavorGraph knowledge graph. By treating ingredients as nodes and their relationships as edges, we apply state-of-the-art GNN architectures to learn meaningful embeddings that capture culinary patterns and ingredient synergies.
+This project applies state-of-the-art Graph Neural Networks to analyze ingredient compatibility using FlavorGraph, a culinary knowledge graph. By treating ingredients as nodes and their relationships as edges, we learn embeddings that capture culinary patterns enhanced by chemical compound information and categorical features.
 
-The implementation compares four different GNN architectures (GCN, GraphSAGE, GAT, and GIN) to understand how different message-passing mechanisms affect the quality of ingredient relationship predictions.
+**Key Innovations:**
+- Enriched node features (chemical compounds, structural properties, ingredient categories)
+- Multiple GNN architectures (GCN, GraphSAGE, GAT, GIN, DeeperGCN)
+- Advanced evaluation metrics (Precision@K, Recall@K, MRR, Diversity)
+- Recipe generation with diversity analysis
 
 ## Project Structure
 
 ```
 .
-├── add_GAT_and_GIN.ipynb                    # Complete implementation with GAT and GIN models
-├── Initial_implementation_analysis.ipynb     # Base implementation with GCN and GraphSAGE
-├── Link_Prediction_on_Heterogenous_Graphs_with_PyG.ipynb  # Heterogeneous graph exploration
+├── add_Features_and_metrics.ipynb           # Main notebook with all improvements
+├── add_Gat_GIN_Commented.ipynb             # Additional GAT/GIN exploration
+├── Link_Prediction_on_Heterogenous_Graphs_with_PyG.ipynb  # Original baseline
 ├── docs/
-│   └── FlavorGraph.pdf                       # Dataset documentation
+│   └── FlavorGraph.pdf                      # Dataset documentation
 ├── LICENSE
 └── README.md
 ```
 
 ## Dataset
 
-**FlavorGraph** is a culinary knowledge graph containing:
-
-- **Nodes**: Ingredients, recipes, and chemical compounds
-- **Edges**: Compatibility relationships with weighted scores
-- **Focus**: Ingredient-to-ingredient relationships for link prediction
-
-The dataset captures the complex interactions between ingredients based on their chemical composition and culinary traditions.
+**FlavorGraph** - A comprehensive culinary knowledge graph:
+- **Nodes**: 1,561 ingredients + chemical compounds + recipes
+- **Edges**: Ingredient-ingredient compatibility relationships
+- **Features**: Chemical compound associations, ingredient categories, structural properties
 
 ## Implemented Models
 
-### 1. Graph Convolutional Network (GCN)
+### Baseline Models
 
-The baseline model using spectral graph convolutions to aggregate neighborhood information.
+**GCN (Graph Convolutional Network)**: Spectral convolutions with normalized adjacency matrix  
+**GraphSAGE**: Inductive learning with neighborhood sampling and mean aggregation
 
-- **Architecture**: 2-layer GCN (input → 128 → 64 dimensions)
-- **Mechanism**: Message passing through normalized adjacency matrix
-- **Strengths**: Simple, efficient, and interpretable
+### Advanced Models
 
-### 2. GraphSAGE (Sample and Aggregate)
+**GAT (Graph Attention Network)**: Multi-head attention (4 heads) with batch normalization and dropout  
+**GIN (Graph Isomorphism Network)**: Theoretically maximal expressive power with sum aggregation  
+**DeeperGCN**: 4-layer architecture with residual connections for capturing complex patterns  
+**Enriched Variants**: GCN and GAT with chemical compound and categorical features
 
-An inductive learning framework that samples and aggregates features from local neighborhoods.
+## Feature Enrichment
 
-- **Architecture**: 2-layer SAGE with mean aggregation
-- **Mechanism**: Neighborhood sampling with learnable aggregation
-- **Strengths**: Scalable to large graphs, generalizes to unseen nodes
+**Structural**: Node degrees, graph topology  
+**Chemical**: Compound associations for molecular similarity  
+**Categorical**: 7 ingredient categories (meats, seafood, vegetables, fruits, spices, dairy, other)  
+**Statistical**: Average edge scores, normalized features
 
-### 3. Graph Attention Network (GAT)
+## Evaluation Metrics
 
-Incorporates attention mechanisms to weight the importance of neighboring nodes dynamically.
+**Standard**: ROC-AUC for link prediction quality  
+**Ranking**: Precision@K, Recall@K, Hit Rate@K (K=5,10,20)  
+**Quality**: MRR (Mean Reciprocal Rank), Diversity@K for category balance
 
-- **Architecture**: 2-layer GAT with 4 attention heads
-- **Mechanism**: Multi-head attention for adaptive neighbor weighting
-- **Features**: Batch normalization, dropout (0.3), learning rate 0.001
-- **Strengths**: Learns which neighbors are most relevant for each node
+## Results
 
-### 4. Graph Isomorphism Network (GIN)
-
-Based on the Weisfeiler-Lehman graph isomorphism test, maximizing expressive power.
-
-- **Architecture**: 2-layer GIN with MLPs
-- **Mechanism**: Sum aggregation with learnable neural networks
-- **Features**: Xavier initialization, batch normalization, dropout (0.3), learning rate 0.0005
-- **Strengths**: Theoretically most expressive among message-passing GNNs
+Enriched models demonstrate significant improvements across all metrics. GAT with enriched features achieves best Precision@10 and diversity scores. DeeperGCN captures indirect ingredient relationships more effectively.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Maintainer**: Erwann Lesech  
-**Institution**: EPITA  
-**Year**: 2025
+**Author**: Erwann Lesech | **Institution**: EPITA | **Year**: 2025
