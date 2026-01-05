@@ -1,0 +1,183 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, top=2.5cm, bottom=3cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{mathpazo}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{float}
+
+% --- Couleurs et réglages visuels ---
+\definecolor{epitablue}{RGB}{0,70,140}
+\definecolor{lightgray}{gray}{0.9}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\textit{Page \thepage\ sur \pageref{LastPage}}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+\linespread{1.2}
+
+\begin{titlepage}
+    \centering
+    \vspace*{\fill} % --- Centrage vertical du contenu principal ---
+
+    % --- Logos en parallèle ---
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=0.75\textwidth]{figures/epita.png}\\[0.3cm]
+        {\small \textbf{EPITA}}\\[-0.1cm]
+        {\footnotesize École d'Ingénieurs pour l'Informatique et les Techniques Avancées}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=0.7\textwidth]{figures/logo_SCIA-Graphes-1024x768.png}\\[0.3cm]
+        {\small \textbf{Majeure SCIA-G}}\\[-0.1cm]
+        {\footnotesize Sciences Cognitives, Intelligence Artificielle\\ \& Graphes}
+    \end{minipage}
+
+    % --- Ligne décorative fine ---
+    \vspace{1.5cm}
+    \rule{\textwidth}{0.6pt}\\[1.5cm]
+
+    % --- Titre principal ---
+    {\Huge \bfseries \textcolor{epitablue}{Projet Graph Neural Network}}\\[0.8cm]
+    {\Large \textit{Implémentation et amélioration de la prédiction de liens d'aliments}}\\[1.8cm]
+
+
+    % --- Type de document ---
+    {\Large \textsc{Rapport de Projet}}\\[3.5cm]
+
+    % --- Auteurs et encadrant alignés ---
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \textbf{Auteurs}\\[0.3cm]
+        \begin{tabular}{rl}
+            Erwann Lesech - Aymeric Le Riboter
+        \end{tabular}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \textbf{Encadrant}\\[0.3cm]
+        \begin{tabular}{rl}
+            Marc Plantevit
+        \end{tabular}
+    \end{minipage}
+
+    \vspace*{2cm}
+    \rule{0.6\textwidth}{0.4pt}\\[0.8cm]
+
+    {\large Lyon, le 12 novembre 2025}\\[0.3cm]
+    {\normalsize Promo 2026 SCIA-G}\\[2cm]
+
+    \end{titlepage}
+
+    \clearpage
+
+    \section{Introduction}
+    
+    Les Graph Neural Networks (GNNs) offrent un cadre puissant pour modéliser les relations complexes entre entités inter-connectées. Ce projet explore leur application à la prédiction de liens dans le domaine culinaire, en s'appuyant sur le FlavorGraph, un graphe hétérogène reliant des ingrédients entre eux selon leurs affinités gustatives. L'objectif est d'approfondir notre compréhension des GNNs tout en démontrant notre capacité à adapter et améliorer un modèle existant.
+    
+    \section{Approche Initiale}
+    
+    Le tutoriel de base\footnote{\url{https://medium.com/stanford-cs224w/whats-cooking-using-gnns-to-redefine-culinary-boundaries-1184319653c3}} implémente une tâche de prédiction de liens sur le FlavorGraph, un réseau de 1 561 ingrédients reliés par 111 355 arêtes pondérées représentant leurs compatibilités gustatives. L'approche utilise un GCN (Graph Convolutional Network) à deux couches avec des features initiales simples (identifiants des nœuds) en comparaison d'un GraphSage. Les modèles sont entraînés pour prédire l'existence d'arêtes entre ingrédients, en utilisant l'AUC comme métrique d'évaluation.
+    
+    Les résultats de base montrent des performances correctes mais limitées par la simplicité des features et l'absence de métriques avancées pour évaluer la qualité des prédictions au-delà de la classification binaire.
+    
+    \section{Améliorations Proposées}
+    
+    Notre contribution se décline en trois axes majeurs : l'enrichissement des features, la diversification des architectures et l'ajout de métriques d'évaluation pertinentes.
+    
+    \subsection{Enrichissement des Features}
+    
+    Nous avons enrichi la représentation des nœuds avec trois types de features :
+    
+    \textbf{Features structurelles :} Le degré de chaque nœud capture son importance dans le réseau. Une normalisation par z-score standardise les valeurs pour améliorer la convergence.
+    
+    \textbf{Features chimiques :} En exploitant les relations entity-compound du FlavorGraph complet, nous ajoutons pour chaque ingrédient le nombre de composés chimiques associés. Cette information permet de capturer les similarités moléculaires entre ingrédients compatibles.
+    
+    \textbf{Features catégorielles :} Un encodage one-hot répartit les 1 561 ingrédients en 7 catégories (viandes, poissons, légumes, fruits, épices, produits laitiers, autres) via une classification par mots-clés. Ceci introduit des informations sémantiques sur la nature des ingrédients. Evidemment, cet ajout d'information devrait être fait via une base de données externe dans un contexte réel.
+    
+    \subsection{Nouveaux Modèles Testés}
+    
+    Au-delà du GCN de base ainsi que du Sage, nous avons implémenté et testé quatre architectures supplémentaires :
+    \begin{itemize}
+        \item \textbf{GAT (Graph Attention Network)} avec 4 têtes d'attention pour pondérer dynamiquement l'importance des voisins
+        \item \textbf{GIN (Graph Isomorphism Network)} basé sur le test de Weisfeiler-Lehman
+        \item \textbf{DeeperGCN} avec connexions résiduelles pour capturer des dépendances à longue portée
+        \item \textbf{EnrichedNet et EnrichedGAT} combinant respectivement GCN et GAT avec les features enrichies
+    \end{itemize}
+    
+    \subsection{Métriques d'Évaluation Avancées}
+    
+    L'AUC seul ne suffit pas à évaluer la qualité des recommandations. Nous avons ajouté : \textbf{Precision@K, Recall@K} pour mesurer respectivement la précision et la couverture des top-K prédictions. Enfin, nous avons également rajouté le \textbf{MRR (Mean Reciprocal Rank)} pour évaluer la position moyenne des premières prédictions correctes mais également la \textbf{Diversity@10} pour quantifier la variété des catégories d'ingrédients dans les recommandations grâce à l'ajout des features catégorielles.
+    
+    \section{Résultats et Analyse}
+    
+    \subsection{Performances Comparatives}
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/analysis.png}
+    \caption{Visualisation comparative des métriques d'évaluation pour tous les modèles testés.}
+    \end{figure}
+    
+    \begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{lccccc}
+    \hline
+    \textbf{Modèle} & \textbf{AUC} & \textbf{MRR} & \textbf{P@10} & \textbf{R@10} & \textbf{D@10} \\
+    \hline
+    GCN Baseline & 0.8896 & -- & -- & -- & -- \\
+    SAGE Baseline & 0.5356 & -- & -- & -- & -- \\
+    GAT Baseline & 0.4877 & -- & -- & -- & -- \\
+    GIN Baseline & 0.6312 & -- & -- & -- & -- \\
+    GCN Enrichi & \textbf{0.9178} & \textbf{1.0000} & \textbf{1.0000} & \textbf{0.0004} & 0.5000 \\
+    GAT Enrichi & 0.5322 & 0.3333 & 0.5000 & 0.0002 & 0.5000 \\
+    Deeper GCN & 0.9170 & 1.0000 & 1.0000 & 0.0004 & \textbf{0.6429} \\
+    \hline
+    \end{tabular}
+    \caption{Comparaison des performances des différents modèles sur l'ensemble de test.}
+    \end{table}
+    
+    
+    
+    \subsection{Analyse des Résultats}
+    
+    \textbf{Impact de l'enrichissement des features :} L'enrichissement apporte une amélioration significative. Le GCN enrichi surpasse le baseline de +3.2\% en AUC, atteignant un excellent score de 0.9178. Ceci confirme l'importance cruciale des features dans les GNNs pour capturer les compatibilités entre ingrédients.
+    
+    \textbf{Comparaison des architectures :} Les modèles enrichis (GCN et Deeper GCN) obtiennent les meilleures performances avec des AUC supérieurs à 0.91. Le GAT, malgré son mécanisme d'attention, performe moins bien (0.5322) même avec enrichissement, suggérant que l'attention n'apporte pas d'avantage dans ce contexte. 
+    
+    \textbf{Limitations observées :} Le Recall@10 reste très faible (0.0004) pour tous les modèles, reflétant la difficulté à couvrir l'ensemble des arêtes positives dans les top-10 prédictions étant donné le grand nombre d'ingrédients (1 561). Cette métrique souligne le défi du ranking dans les graphes denses.
+    
+    \subsection{Exemple Qualitatif : Génération de Recettes}
+    
+    Pour illustrer concrètement les différences entre modèles, considérons une génération de recette à partir de \textit{cheese} :
+    
+    \begin{itemize}
+        \item \textbf{GAT Baseline :} cheese $\rightarrow$ chai\_tea\_mix $\rightarrow$ arm\_roast $\rightarrow$ beef\_gravy\_mix $\rightarrow$ bird\_seed (combinaisons incohérentes)
+        \item \textbf{GCN Enrichi :} cheese $\rightarrow$ egg $\rightarrow$ baking\_powder $\rightarrow$ bay\_leaf $\rightarrow$ brown\_sugar $\rightarrow$ all\_purpose\_flour (séquence cohérente pour une préparation)
+        \item \textbf{Deeper GCN :} cheese $\rightarrow$ apple\_cider $\rightarrow$ apple $\rightarrow$ american\_cheese $\rightarrow$ baking\_powder $\rightarrow$ almond\_butter (combinaison créative et équilibrée)
+    \end{itemize}
+    
+    Ces exemples illustrent clairement l'avantage des modèles enrichis : le GAT baseline génère des associations absurdes (thé chai avec fromage, graines pour oiseaux), tandis que les modèles enrichis proposent des combinaisons culinairement cohérentes et créatives.
+    
+    \section{Conclusion}
+    
+    Ce projet démontre l'importance de l'ingénierie des features et du choix de métriques d'évaluation adaptées pour les GNNs. Les métriques de ranking pour de la recommandation (Precision@K, MRR, Diversity@K) offrent une vision plus complète que l'AUC seul.
+        
+    Il demeure intéressant d'augmenter les informations disponibles (par exemple via des embeddings pré-entraînés d'ingrédients) ou encore d'y faire intervenir des features culturelles avec des informations géographiques ou saisonnières.
+
+\end{document}
